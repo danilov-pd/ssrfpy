@@ -165,6 +165,8 @@ def _cubic_interpolate_regular_mesh( lons, lats, tria, degrees = True):
            values.ctypes.data_as(ctypes.POINTER(ctypes.c_double) ),\
            ctypes.byref( ier ) )
 
+    grad_copy = np.copy(grad)
+
     #Check the error code
     if ier.value != 0:
         if ier.value == -1:
@@ -174,7 +176,7 @@ def _cubic_interpolate_regular_mesh( lons, lats, tria, degrees = True):
         elif ier.value == -2:
             print("Error: too much extrapolation")
 
-    return values.T, grad
+    return values.T, grad_copy
 
 
 
