@@ -174,7 +174,7 @@ def _cubic_interpolate_regular_mesh( lons, lats, tria, degrees = True):
         elif ier.value == -2:
             print("Error: too much extrapolation")
 
-    return values.T
+    return values.T, grad
 
 
 
@@ -324,17 +324,18 @@ def interpolate_regular_grid( lons, lats, values, n=90, method ='linear', degree
         reg_lat = np.rad2deg(reg_lat)
     mesh_lon, mesh_lat = np.meshgrid(reg_lon, reg_lat)
 
+    grad = None
     # The meat of the thing
     tria = _create_triangulation(x, y, z, cleaned_values)
     if method == 'linear':
         mesh_values = _linear_interpolate( mesh_lon, mesh_lat, tria, degrees=degrees)
     elif method == 'cubic':
-        mesh_values = _cubic_interpolate_regular_mesh( reg_lon, reg_lat, tria, degrees=degrees)
+        mesh_values, grad = _cubic_interpolate_regular_mesh( reg_lon, reg_lat, tria, degrees=degrees)
 
     #Compute the quadrature weights if we have a GL grid
     if use_legendre:
         mesh_weights = np.outer( lat_weights, np.ones_like(reg_lon) )*np.pi/n
         mesh_weights[:,-1] = 0.0  # Set duplicated column to zero in weights
-        return mesh_lon, mesh_lat, mesh_values, mesh_weights
+        return mesh_lon, mesh_lat, mesh_values, mesh_weights, grad
     else:
-        return mesh_lon, mesh_lat, mesh_values
+        return mesh_lon, mesh_lat, mesh_values, grad
